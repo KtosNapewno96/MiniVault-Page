@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MiniVault | Mission-Critical Security Engine</title>
+    <style>
+      @import url("https://googleapis.com");
+
+      :root {
+        --bg-color: #010409;
+        --accent-blue: #2f81f7;
+        --accent-glow: rgba(47, 129, 247, 0.6);
+        --text-main: #e6edf3;
+        --text-dim: #8b949e;
+        --border-color: #30363d;
+        --readme-bg: #0d1117;
+        --nav-bg: rgba(1, 4, 9, 0.85);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* --- TŁO I KŁÓDKI --- */
+      .bg-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-image: radial-gradient(
+          var(--border-color) 0.5px,
+          transparent 0.5px
+        );
+        background-size: 40px 40px;
+        opacity: 0.2;
+      }
+
+      .lock {
+        position: fixed;
+        top: -50px;
+        font-size: 24px;
+        user-select: none;
+        pointer-events: none;
+        z-index: 999;
+        animation: fall linear forwards;
+        opacity: 0.3;
+      }
+      @keyframes fall {
+        to {
+          transform: translateY(110vh) rotate(360deg);
+        }
+      }
+
+      /* --- NAWIGACJA --- */
+      nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 70px;
+        background: var(--nav-bg);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .nav-content {
+        width: 100%;
+        max-width: 1100px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 25px;
+        align-items: center;
+      }
+      .logo {
+        font-weight: 800;
+        font-size: 1.3rem;
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .main-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 150px 20px 40px 20px;
+      }
+
+      /* --- PRZYCISKI --- */
+      .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 80px;
+      }
+      .btn {
+        position: relative;
+        padding: 16px 34px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .btn-installer {
+        background: #fff;
+        color: #000;
+        z-index: 1;
+      }
+      .btn-installer:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0 40px var(--accent-glow);
+        background: var(--accent-blue);
+        color: #fff;
+      }
+
+      .btn-glow-tracker {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.8) 0%,
+          transparent 70%
+        );
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: -1;
+        mix-blend-mode: overlay;
+      }
+      .btn-installer:hover .btn-glow-tracker {
+        opacity: 1;
+      }
+
+      .btn-secondary {
+        border: 1px solid var(--border-color);
+        color: #fff;
+      }
+      .btn-secondary:hover {
+        border-color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+      }
+
+      /* --- KONTENERY SEKCJI --- */
+      .section-container {
+        width: 100%;
+        max-width: 850px;
+        background: var(--readme-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        text-align: left;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      }
+      .section-header {
+        background: #161b22;
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--border-color);
+        font-family: "Fira Code", monospace;
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+      .section-body {
+        padding: 45px;
+        line-height: 1.8;
+        color: #c9d1d9;
+      }
+
+      /* MARKDOWN STYLES */
+      .section-body h1 {
+        font-size: 2.2rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        color: #fff;
+        margin-top: 0;
+      }
+      .section-body h2 {
+        font-size: 1.6rem;
+        color: #fff;
+        margin-top: 45px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+      }
+      .section-body h3 {
+        color: var(--accent-blue);
+        margin-top: 30px;
+        font-size: 1.3rem;
+      }
+      .section-body hr {
+        height: 1px;
+        border: 0;
+        background: var(--border-color);
+        margin: 40px 0;
+      }
+      .section-body ul {
+        padding-left: 20px;
+      }
+      .section-body li {
+        margin-bottom: 10px;
+      }
+      .section-body strong {
+        color: #fff;
+      }
+      .section-body code {
+        background: #30363d;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-family: "Fira Code", monospace;
+        color: #ff7b72;
+        font-size: 0.9em;
+      }
+      .section-body img {
+        max-width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        margin: 30px 0;
+      }
+
+      /* TABELA WERSJI */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th {
+        text-align: left;
+        color: var(--accent-blue);
+        padding: 10px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+      }
+      .status-tag {
+        background: #238636;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+
+      /* KONTAKT */
+      .btn-email {
+        background: var(--accent-blue);
+        color: #fff;
+        padding: 18px 45px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        transition: 0.3s;
+      }
+      .btn-email:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px var(--accent-glow);
+      }
+
+      footer {
+        margin: 60px 0;
+        color: #333;
+        font-size: 0.8rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <nav>
+      <div class="nav-content">
+        <a href="#" class="logo">MiniVault</a>
+        <div class="nav-links">
+          <a
+            href="#readme"
+            style="
+              color: var(--text-dim);
+              text-decoration: none;
+              font-weight: 600;
+              margin-left: 20px;
+            "
+            >Docs</a
+          >
+          <a
+            href="#releases"
+            style="
+              color: var(--text-dim);
+              text-decoration: none;
+              font-weight: 600;
+              margin-left: 20px;
+            "
+            >Releases</a
+          >
+          <a
+            href="#contact"
+            style="
+              color: var(--text-dim);
+              text-decoration: none;
+              font-weight: 600;
+              margin-left: 20px;
+            "
+            >Contact</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-wrapper">
+      <header style="text-align: center; margin-bottom: 50px">
+        <h1
+          style="
+            font-size: 4.5rem;
+            margin: 0;
+            letter-spacing: -3px;
+            color: #fff;
+          "
+        >
+          MiniVault
+        </h1>
+        <p style="color: var(--text-dim); font-size: 1.3rem; margin-top: 10px">
+          Mission-Critical Standalone Security Engine
+        </p>
+      </header>
+
+      <div class="btn-group">
+        <a
+          href="MiniVault_v3.0_Setup.exe"
+          class="btn btn-installer"
+          id="installerBtn"
+        >
+          <div class="btn-glow-tracker"></div>
+          Download Installer (x64)
+        </a>
+        <a href="MiniVault_v3.0_final.zip" class="btn btn-secondary"
+          >Download ZIP</a
+        >
+        <a href="https://github.com" target="_blank" class="btn btn-secondary"
+          >GitHub Source</a
+        >
+      </div>
+
+      <!-- PEŁNE README -->
+      <div class="section-container" id="readme">
+        <div class="section-header">README.md</div>
+        <div class="section-body">
+          <h1>🛡️ MiniVault v2.9 | Encryption Engine</h1>
+          <p>
+            <strong>MiniVault</strong> is a high-performance, standalone
+            security tool engineered for mission-critical tasks.
+          </p>
+
+          <img src="screenshots/minivault.png" alt="MiniVault Interface" />
+          <img
+            src="screenshots/minivault_winv_enabled.png"
+            alt="Protection Interface"
+          />
+
+          <hr />
+
+          <h2>💎 Technical Excellence</h2>
+          <h3>🔑 Cryptographic Core</h3>
+          <ul>
+            <li>
+              <strong>Argon2id Key Derivation:</strong> Configured with a
+              <strong>1.0 GB Memory Cost</strong>. Resistance against
+              brute-force and TMTO exploits.
+            </li>
+            <li>
+              <strong>AES-256 GCM:</strong> Military-grade authenticated
+              encryption.
+            </li>
+            <li>
+              <strong>Hardware Acceleration:</strong> Native support for
+              <strong>Intel® AES-NI</strong>.
+            </li>
+          </ul>
+
+          <h3>🧠 Advanced Memory Management</h3>
+          <ul>
+            <li>
+              <strong>Memory-Hard Security:</strong> 1 GB RAM lock during
+              transformation sandbox.
+            </li>
+            <li>
+              <strong>Clipboard Sanitization:</strong> Real-time purging of
+              Windows Clipboard & <code>Win+V</code>.
+            </li>
+          </ul>
+
+          <hr />
+
+          <h2>💻 System Requirements</h2>
+          <ul>
+            <li>
+              <strong>Processor:</strong> Intel Core i5-6200U (Min) / i7-7560U
+              (Rec)
+            </li>
+            <li><strong>Memory:</strong> 8 GB LPDDR3 (Min) / 16 GB (Rec)</li>
+            <li><strong>OS:</strong> Windows 10/11 64-bit</li>
+          </ul>
+
+          <hr />
+
+          <h2>📜 Legal & Compliance</h2>
+          <p>
+            <strong>Privacy First:</strong> Zero telemetry. Zero cloud-sync.
+            Your keys never leave your local RAM.
+          </p>
+        </div>
+      </div>
+
+      <!-- HISTORIA WERSJI -->
+      <div class="section-container" id="releases">
+        <div class="section-header">Version History</div>
+        <div class="section-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>v3.0</strong></td>
+                <td>27.04.2026</td>
+                <td><span class="status-tag">LATEST</span></td>
+                <td>MiniVault App 3.0 | Stable Version</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- KONTAKT -->
+      <div
+        id="contact"
+        style="
+          padding: 100px 0;
+          text-align: center;
+          border-top: 1px solid var(--border-color);
+          width: 100%;
+          max-width: 850px;
+        "
+      >
+        <h2 style="margin-bottom: 30px">Got Questions?</h2>
+        <a href="mailto:contact@minivault.dev" class="btn-email"
+          >Drop an Email</a
+        >
+      </div>
+
+      <footer>&copy; 2026 MiniVault Project. Engineered for Privacy.</footer>
+    </div>
+
+    <script>
+      
+      // --- 2. GLOW TRACKER (ŚLEDZENIE MYSZY) ---
+      const btn = document.getElementById("installerBtn");
+      const glow = btn.querySelector(".btn-glow-tracker");
+      btn.addEventListener("mousemove", (e) => {
+        const rect = btn.getBoundingClientRect();
+        glow.style.left = e.clientX - rect.left + "px";
+        glow.style.top = e.clientY - rect.top + "px";
+      });
+
+      // GLOW TRACKER
+      const btn = document.getElementById("installerBtn");
+      const glow = btn.querySelector(".btn-glow-tracker");
+      btn.addEventListener("mousemove", (e) => {
+        const rect = btn.getBoundingClientRect();
+        glow.style.left = e.clientX - rect.left + "px";
+        glow.style.top = e.clientY - rect.top + "px";
+      });
+
+      // DESZCZ KŁÓDEK (CO SEKUNDĘ)
+      setInterval(() => {
+        const lock = document.createElement("div");
+        lock.classList.add("lock");
+        lock.innerText = "🔒";
+        lock.style.left = Math.random() * 100 + "vw";
+        lock.style.animationDuration = Math.random() * 2 + 4 + "s";
+        document.body.appendChild(lock);
+        setTimeout(() => lock.remove(), 6000);
+      }, 4500);
+    </script>
+  </body>
+</html>
